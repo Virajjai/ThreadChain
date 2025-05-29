@@ -10,6 +10,7 @@ import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Post } from '@/types';
 import { cn } from '@/lib/utils';
 import { TipButton } from './TipButton';
+import { useApp } from '@/contexts/AppContext';
 
 interface PostCardProps {
   post: Post;
@@ -19,6 +20,7 @@ interface PostCardProps {
 
 export const PostCard: React.FC<PostCardProps> = ({ post, onVote, onTip }) => {
   const navigate = useNavigate();
+  const { setSelectedHashtag, setSearchQuery } = useApp();
   const [isLiked, setIsLiked] = useState(false);
   const [localUpvotes, setLocalUpvotes] = useState(post.upvotes);
   const [localDownvotes, setLocalDownvotes] = useState(post.downvotes);
@@ -78,8 +80,9 @@ export const PostCard: React.FC<PostCardProps> = ({ post, onVote, onTip }) => {
 
   const handleHashtagClick = (tag: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    // Navigate to search with hashtag
-    navigate(`/?search=${encodeURIComponent(tag)}`);
+    setSelectedHashtag(tag);
+    setSearchQuery('');
+    navigate('/');
   };
 
   const handleUserClick = (username: string, e: React.MouseEvent) => {
@@ -100,40 +103,60 @@ export const PostCard: React.FC<PostCardProps> = ({ post, onVote, onTip }) => {
   return (
     <>
       <motion.div
+        layout
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        whileHover={{ y: -2 }}
-        transition={{ duration: 0.3 }}
+        whileHover={{ 
+          y: -2,
+          boxShadow: "0 10px 30px rgba(0,0,0,0.1)"
+        }}
+        transition={{ 
+          duration: 0.3,
+          type: "spring",
+          stiffness: 300
+        }}
       >
         <Card 
-          className="glass border-border/50 hover:border-primary/20 transition-all duration-300 cursor-pointer"
+          className="glass border-border/50 hover:border-primary/20 transition-all duration-300 cursor-pointer relative overflow-hidden group"
           onClick={handlePostClick}
         >
-          <div className="p-6">
+          {/* Gradient overlay on hover */}
+          <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+          
+          <div className="p-6 relative z-10">
             {/* Header */}
             <div className="flex items-center space-x-3 mb-4">
-              <Avatar 
-                className="w-10 h-10 cursor-pointer hover:ring-2 hover:ring-primary transition-all"
-                onClick={(e) => handleUserClick(post.author.username, e)}
+              <motion.div
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.95 }}
               >
-                <img 
-                  src={post.author.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${post.author.username}`} 
-                  alt={post.author.displayName}
-                  className="w-full h-full object-cover"
-                />
-              </Avatar>
+                <Avatar 
+                  className="w-10 h-10 cursor-pointer hover:ring-2 hover:ring-primary transition-all"
+                  onClick={(e) => handleUserClick(post.author.username, e)}
+                >
+                  <img 
+                    src={post.author.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${post.author.username}`} 
+                    alt={post.author.displayName}
+                    className="w-full h-full object-cover"
+                  />
+                </Avatar>
+              </motion.div>
               <div className="flex-1">
                 <div className="flex items-center space-x-2">
-                  <span 
+                  <motion.span 
+                    whileHover={{ scale: 1.05 }}
                     onClick={(e) => handleUserClick(post.author.username, e)}
                     className="font-semibold hover:text-primary transition-colors cursor-pointer"
                   >
                     {post.author.displayName}
-                  </span>
+                  </motion.span>
                   {post.author.isVerified && (
-                    <div className="w-4 h-4 bg-solana-green rounded-full flex items-center justify-center">
+                    <motion.div 
+                      whileHover={{ scale: 1.2 }}
+                      className="w-4 h-4 bg-solana-green rounded-full flex items-center justify-center"
+                    >
                       <span className="text-xs text-white">✓</span>
-                    </div>
+                    </motion.div>
                   )}
                   <span className="text-muted-foreground">@{post.author.username}</span>
                   <span className="text-muted-foreground">•</span>
@@ -154,13 +177,15 @@ export const PostCard: React.FC<PostCardProps> = ({ post, onVote, onTip }) => {
               {post.tags.length > 0 && (
                 <div className="flex flex-wrap gap-2 mb-3">
                   {post.tags.map((tag) => (
-                    <span 
+                    <motion.span 
                       key={tag}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
                       onClick={(e) => handleHashtagClick(tag, e)}
-                      className="px-2 py-1 bg-primary/10 text-primary text-sm rounded-md hover:bg-primary/20 cursor-pointer transition-colors"
+                      className="px-2 py-1 bg-primary/10 text-primary text-sm rounded-md hover:bg-primary/20 cursor-pointer transition-all duration-200 border border-primary/20"
                     >
                       #{tag}
-                    </span>
+                    </motion.span>
                   ))}
                 </div>
               )}
@@ -169,14 +194,15 @@ export const PostCard: React.FC<PostCardProps> = ({ post, onVote, onTip }) => {
               {post.mediaUrl && (
                 <motion.div 
                   whileHover={{ scale: 1.02 }}
-                  className="rounded-lg overflow-hidden border border-border cursor-pointer"
+                  whileTap={{ scale: 0.98 }}
+                  className="rounded-lg overflow-hidden border border-border cursor-pointer relative group"
                   onClick={handleImageClick}
                 >
                   {post.mediaType === 'image' ? (
                     <img 
                       src={post.mediaUrl} 
                       alt="Post media"
-                      className="w-full h-auto max-h-96 object-cover"
+                      className="w-full h-auto max-h-96 object-cover transition-transform duration-300 group-hover:scale-105"
                     />
                   ) : (
                     <video 
@@ -185,6 +211,15 @@ export const PostCard: React.FC<PostCardProps> = ({ post, onVote, onTip }) => {
                       className="w-full h-auto max-h-96"
                     />
                   )}
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300 flex items-center justify-center">
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      whileHover={{ opacity: 1, scale: 1 }}
+                      className="bg-black/50 rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                    >
+                      <span className="text-white text-sm">Click to expand</span>
+                    </motion.div>
+                  </div>
                 </motion.div>
               )}
             </div>
@@ -194,82 +229,96 @@ export const PostCard: React.FC<PostCardProps> = ({ post, onVote, onTip }) => {
               <div className="flex items-center space-x-4">
                 {/* Voting */}
                 <div className="flex items-center space-x-1">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleVote('up');
-                    }}
-                    className={cn(
-                      'hover:bg-green-500/10 hover:text-green-500',
-                      userVote === 'up' && 'bg-green-500/10 text-green-500'
-                    )}
-                  >
-                    <ChevronUp className="w-4 h-4" />
-                    <span className="ml-1">{localUpvotes}</span>
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleVote('down');
-                    }}
-                    className={cn(
-                      'hover:bg-red-500/10 hover:text-red-500',
-                      userVote === 'down' && 'bg-red-500/10 text-red-500'
-                    )}
-                  >
-                    <ChevronDown className="w-4 h-4" />
-                    <span className="ml-1">{localDownvotes}</span>
-                  </Button>
+                  <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleVote('up');
+                      }}
+                      className={cn(
+                        'hover:bg-green-500/10 hover:text-green-500 transition-all duration-200',
+                        userVote === 'up' && 'bg-green-500/10 text-green-500'
+                      )}
+                    >
+                      <ChevronUp className="w-4 h-4" />
+                      <span className="ml-1">{localUpvotes}</span>
+                    </Button>
+                  </motion.div>
+                  <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleVote('down');
+                      }}
+                      className={cn(
+                        'hover:bg-red-500/10 hover:text-red-500 transition-all duration-200',
+                        userVote === 'down' && 'bg-red-500/10 text-red-500'
+                      )}
+                    >
+                      <ChevronDown className="w-4 h-4" />
+                      <span className="ml-1">{localDownvotes}</span>
+                    </Button>
+                  </motion.div>
                 </div>
 
                 {/* Comments */}
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="hover:bg-blue-500/10 hover:text-blue-500"
-                  onClick={handleCommentsClick}
-                >
-                  <MessageSquare className="w-4 h-4" />
-                  <span className="ml-1">{post.commentCount}</span>
-                </Button>
+                <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="hover:bg-blue-500/10 hover:text-blue-500 transition-all duration-200"
+                    onClick={handleCommentsClick}
+                  >
+                    <MessageSquare className="w-4 h-4" />
+                    <span className="ml-1">{post.commentCount}</span>
+                  </Button>
+                </motion.div>
 
                 {/* Like */}
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setIsLiked(!isLiked);
-                  }}
-                  className={cn(
-                    'hover:bg-pink-500/10 hover:text-pink-500',
-                    isLiked && 'bg-pink-500/10 text-pink-500'
-                  )}
-                >
-                  <Heart className={cn('w-4 h-4', isLiked && 'fill-current')} />
-                </Button>
+                <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setIsLiked(!isLiked);
+                    }}
+                    className={cn(
+                      'hover:bg-pink-500/10 hover:text-pink-500 transition-all duration-200',
+                      isLiked && 'bg-pink-500/10 text-pink-500'
+                    )}
+                  >
+                    <Heart className={cn('w-4 h-4', isLiked && 'fill-current')} />
+                  </Button>
+                </motion.div>
 
                 {/* Share */}
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="hover:bg-primary/10 hover:text-primary"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <Share className="w-4 h-4" />
-                </Button>
+                <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="hover:bg-primary/10 hover:text-primary transition-all duration-200"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <Share className="w-4 h-4" />
+                  </Button>
+                </motion.div>
               </div>
 
               {/* Tip Info & Button */}
               <div className="flex items-center space-x-3">
                 {post.tipAmount > 0 && (
-                  <div className="text-sm text-solana-green font-medium">
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    className="text-sm text-solana-green font-medium"
+                  >
                     {post.tipAmount} SOL tipped
-                  </div>
+                  </motion.div>
                 )}
                 <div onClick={(e) => e.stopPropagation()}>
                   <TipButton 
@@ -287,24 +336,32 @@ export const PostCard: React.FC<PostCardProps> = ({ post, onVote, onTip }) => {
 
       {/* Image Modal */}
       <Dialog open={showImageModal} onOpenChange={setShowImageModal}>
-        <DialogContent className="max-w-4xl w-full h-full max-h-[90vh] p-0 overflow-hidden">
-          <div className="relative w-full h-full flex items-center justify-center bg-black">
-            <Button
-              variant="ghost"
-              size="sm"
+        <DialogContent className="max-w-7xl w-full h-full max-h-[95vh] p-0 overflow-hidden bg-black/95 border-none">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.8 }}
+            className="relative w-full h-full flex items-center justify-center"
+          >
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
               onClick={() => setShowImageModal(false)}
-              className="absolute top-4 right-4 z-10 text-white hover:bg-white/20"
+              className="absolute top-4 right-4 z-50 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors"
             >
               <X className="w-6 h-6" />
-            </Button>
+            </motion.button>
             {post.mediaUrl && (
-              <img 
+              <motion.img 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
                 src={post.mediaUrl} 
                 alt="Post media"
                 className="max-w-full max-h-full object-contain"
+                style={{ maxHeight: '90vh' }}
               />
             )}
-          </div>
+          </motion.div>
         </DialogContent>
       </Dialog>
     </>
