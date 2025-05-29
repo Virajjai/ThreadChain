@@ -15,7 +15,7 @@ import { Link } from 'react-router-dom';
 
 const Index = () => {
   const { connected } = useWallet();
-  const { posts, setPosts } = useApp();
+  const { posts, setPosts, currentUser } = useApp();
   const [activeTab, setActiveTab] = useState('trending');
   const [filteredPosts, setFilteredPosts] = useState<Post[]>(posts);
 
@@ -112,26 +112,26 @@ const Index = () => {
           <motion.div
             animate={{ 
               background: [
-                'linear-gradient(135deg, #9945FF 0%, #14F195 100%)',
-                'linear-gradient(135deg, #14F195 0%, #9945FF 100%)',
-                'linear-gradient(135deg, #9945FF 0%, #14F195 100%)'
+                'linear-gradient(135deg, #3B82F6 0%, #8B5CF6 100%)',
+                'linear-gradient(135deg, #8B5CF6 0%, #3B82F6 100%)',
+                'linear-gradient(135deg, #3B82F6 0%, #8B5CF6 100%)'
               ]
             }}
             transition={{ duration: 3, repeat: Infinity }}
             className="w-24 h-24 rounded-2xl mx-auto flex items-center justify-center mb-6"
           >
-            <span className="text-white font-bold text-3xl">D3</span>
+            <span className="text-white font-bold text-3xl">TC</span>
           </motion.div>
           
           <div>
             <h1 className="text-4xl font-bold text-gradient mb-4">
-              Welcome to D3
+              Welcome to ThreadChain
             </h1>
             <p className="text-xl text-muted-foreground mb-8">
-              Decentralized Discovery & Discussion
+              Decentralized Social Networking
             </p>
             <p className="text-muted-foreground mb-8">
-              Connect your Solana wallet to start exploring the decentralized social experience.
+              Connect your Solana wallet to start building your decentralized social presence.
             </p>
           </div>
 
@@ -144,11 +144,35 @@ const Index = () => {
 
           <div className="pt-8 space-y-4 text-sm text-muted-foreground">
             <div className="flex items-center justify-center space-x-4">
-              <span>🔥 Trending posts</span>
-              <span>💰 SOL tipping</span>
-              <span>🗳️ On-chain voting</span>
+              <span>🔗 Blockchain posts</span>
+              <span>💰 SOL rewards</span>
+              <span>🗳️ Decentralized voting</span>
             </div>
           </div>
+        </motion.div>
+      </div>
+    );
+  }
+
+  // Redirect to profile setup if no user profile
+  if (connected && !currentUser) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center space-y-6 max-w-md mx-auto p-8"
+        >
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center mx-auto">
+            <span className="text-white font-bold text-2xl">TC</span>
+          </div>
+          <h2 className="text-2xl font-bold">Almost there!</h2>
+          <p className="text-muted-foreground">Let's set up your profile to complete your ThreadChain experience.</p>
+          <Link to="/setup-profile">
+            <Button className="bg-gradient-to-r from-blue-500 to-purple-600">
+              Setup Profile
+            </Button>
+          </Link>
         </motion.div>
       </div>
     );
@@ -177,12 +201,12 @@ const Index = () => {
                   className="glass rounded-lg p-6 border border-border/50 hover:border-primary/20 transition-all duration-300 cursor-pointer"
                 >
                   <div className="flex items-center space-x-4">
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-solana-purple to-solana-green flex items-center justify-center">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
                       <Plus className="w-5 h-5 text-white" />
                     </div>
                     <div className="flex-1">
                       <p className="text-muted-foreground">
-                        What's on your mind? Share your thoughts with the Solana community...
+                        What's happening on ThreadChain? Share your thoughts...
                       </p>
                     </div>
                   </div>

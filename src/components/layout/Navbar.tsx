@@ -3,13 +3,18 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 import { motion } from 'framer-motion';
-import { Bell, Search, Plus, User } from 'lucide-react';
+import { Bell, Search, Plus, User, Moon, Sun } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { useApp } from '@/contexts/AppContext';
+import { useWallet } from '@solana/wallet-adapter-react';
+import { useTheme } from '@/contexts/ThemeContext';
 
 export const Navbar = () => {
   const location = useLocation();
   const { currentUser, notifications } = useApp();
+  const { connected } = useWallet();
+  const { theme, toggleTheme } = useTheme();
   
   const unreadCount = notifications.filter(n => !n.isRead).length;
   
@@ -28,11 +33,11 @@ export const Navbar = () => {
             <motion.div 
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="w-8 h-8 rounded-lg bg-gradient-to-br from-solana-purple to-solana-green flex items-center justify-center"
+              className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center"
             >
-              <span className="text-white font-bold text-lg">D3</span>
+              <span className="text-white font-bold text-lg">TC</span>
             </motion.div>
-            <span className="text-xl font-bold text-gradient">D3</span>
+            <span className="text-xl font-bold text-gradient">ThreadChain</span>
           </Link>
 
           {/* Search Bar */}
@@ -49,6 +54,16 @@ export const Navbar = () => {
 
           {/* Navigation Icons */}
           <div className="flex items-center space-x-4">
+            {/* Theme Toggle */}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={toggleTheme}
+              className="relative"
+            >
+              {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            </Button>
+
             <Link to="/create">
               <Button
                 variant={isActive('/create') ? 'default' : 'ghost'}
@@ -79,21 +94,23 @@ export const Navbar = () => {
               </Button>
             </Link>
 
-            {currentUser && (
+            {/* User Avatar or Wallet Connection */}
+            {connected && currentUser ? (
               <Link to="/profile">
-                <Button
-                  variant={isActive('/profile') ? 'default' : 'ghost'}
-                  size="sm"
-                  className="relative"
-                >
-                  <User className="w-4 h-4" />
-                  <span className="hidden sm:block ml-2">Profile</span>
+                <Avatar className="w-8 h-8 cursor-pointer hover:ring-2 hover:ring-primary transition-all">
+                  <AvatarImage src={currentUser.avatar} alt={currentUser.displayName} />
+                  <AvatarFallback>{currentUser.displayName.charAt(0)}</AvatarFallback>
+                </Avatar>
+              </Link>
+            ) : connected && !currentUser ? (
+              <Link to="/setup-profile">
+                <Button size="sm" className="bg-gradient-to-r from-blue-500 to-purple-600">
+                  Setup Profile
                 </Button>
               </Link>
+            ) : (
+              <WalletMultiButton />
             )}
-
-            {/* Wallet Connection */}
-            <WalletMultiButton />
           </div>
         </div>
       </div>
