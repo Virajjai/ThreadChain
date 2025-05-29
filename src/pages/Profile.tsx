@@ -1,8 +1,8 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useWallet } from '@solana/wallet-adapter-react';
-import { Calendar, MapPin, Link as LinkIcon, Edit, TrendingUp, DollarSign, MessageCircle, Heart } from 'lucide-react';
+import { Calendar, MapPin, Link as LinkIcon, Edit, TrendingUp, DollarSign, MessageCircle, Heart, Camera, Save, X } from 'lucide-react';
 import { Navbar } from '@/components/layout/Navbar';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { PostCard } from '@/components/post/PostCard';
@@ -10,11 +10,38 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { useApp } from '@/contexts/AppContext';
+import { toast } from '@/hooks/use-toast';
+
+const animeAvatars = [
+  'https://api.dicebear.com/7.x/avataaars/svg?seed=anime1&mouth=smile&eyes=happy',
+  'https://api.dicebear.com/7.x/avataaars/svg?seed=anime2&mouth=smile&eyes=wink',
+  'https://api.dicebear.com/7.x/avataaars/svg?seed=anime3&mouth=eating&eyes=surprised',
+  'https://api.dicebear.com/7.x/avataaars/svg?seed=anime4&mouth=tongue&eyes=hearts',
+  'https://api.dicebear.com/7.x/avataaars/svg?seed=anime5&mouth=smile&eyes=cry',
+  'https://api.dicebear.com/7.x/avataaars/svg?seed=anime6&mouth=concerned&eyes=squint',
+  'https://api.dicebear.com/7.x/avataaars/svg?seed=anime7&mouth=serious&eyes=default',
+  'https://api.dicebear.com/7.x/avataaars/svg?seed=anime8&mouth=smile&eyes=happy',
+  'https://api.dicebear.com/7.x/avataaars/svg?seed=anime9&mouth=eating&eyes=wink',
+  'https://api.dicebear.com/7.x/avataaars/svg?seed=anime10&mouth=tongue&eyes=surprised',
+  'https://api.dicebear.com/7.x/avataaars/svg?seed=anime11&mouth=smile&eyes=hearts',
+  'https://api.dicebear.com/7.x/avataaars/svg?seed=anime12&mouth=concerned&eyes=cry'
+];
 
 const Profile = () => {
   const { connected } = useWallet();
-  const { currentUser, posts } = useApp();
+  const { currentUser, posts, setCurrentUser } = useApp();
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editForm, setEditForm] = useState({
+    displayName: currentUser?.displayName || '',
+    bio: currentUser?.bio || '',
+    avatar: currentUser?.avatar || ''
+  });
+  const [selectedAvatar, setSelectedAvatar] = useState(currentUser?.avatar || '');
+  const [uploadedImage, setUploadedImage] = useState<string | null>(null);
 
   if (!connected || !currentUser) {
     return (
@@ -35,6 +62,35 @@ const Profile = () => {
     { label: 'SOL Earned', value: totalTips.toFixed(2), icon: DollarSign, color: 'text-green-500' },
     { label: 'Comments', value: totalComments, icon: MessageCircle, color: 'text-purple-500' },
   ];
+
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const result = e.target?.result as string;
+        setUploadedImage(result);
+        setSelectedAvatar(result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleSaveProfile = () => {
+    const updatedUser = {
+      ...currentUser,
+      displayName: editForm.displayName,
+      bio: editForm.bio,
+      avatar: selectedAvatar
+    };
+    
+    setCurrentUser(updatedUser);
+    setIsEditModalOpen(false);
+    toast({
+      title: "Profile updated successfully!",
+      description: "Your changes have been saved."
+    });
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -83,10 +139,109 @@ const Profile = () => {
                     </div>
                   </div>
                   
-                  <Button variant="outline" className="flex items-center space-x-2">
-                    <Edit className="w-4 h-4" />
-                    <span>Edit Profile</span>
-                  </Button>
+                  <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
+                    <DialogTrigger asChild>
+                      <Button variant="outline" className="flex items-center space-x-2">
+                        <Edit className="w-4 h-4" />
+                        <span>Edit Profile</span>
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-2xl">
+                      <DialogHeader>
+                        <DialogTitle>Edit Profile</DialogTitle>
+                      </DialogHeader>
+                      <div className="space-y-6">
+                        {/* Avatar Selection */}
+                        <div className="space-y-4">
+                          <Label className="text-sm font-medium">Choose your avatar</Label>
+                          
+                          {/* Upload Custom Image */}
+                          <div className="space-y-2">
+                            <Label htmlFor="avatar-upload" className="text-xs text-muted-foreground">
+                              Upload custom image
+                            </Label>
+                            <div className="flex items-center space-x-2">
+                              <input
+                                id="avatar-upload"
+                                type="file"
+                                accept="image/*"
+                                onChange={handleImageUpload}
+                                className="hidden"
+                              />
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => document.getElementById('avatar-upload')?.click()}
+                              >
+                                <Camera className="w-4 h-4 mr-2" />
+                                Upload Image
+                              </Button>
+                              {uploadedImage && (
+                                <Avatar className="w-10 h-10">
+                                  <AvatarImage src={uploadedImage} />
+                                </Avatar>
+                              )}
+                            </div>
+                          </div>
+                          
+                          {/* Anime Avatars */}
+                          <div className="grid grid-cols-8 gap-3">
+                            {animeAvatars.map((avatar, index) => (
+                              <motion.div
+                                key={index}
+                                whileHover={{ scale: 1.1 }}
+                                whileTap={{ scale: 0.95 }}
+                                className={`relative cursor-pointer rounded-full overflow-hidden border-2 transition-all ${
+                                  selectedAvatar === avatar
+                                    ? 'border-primary ring-2 ring-primary/50'
+                                    : 'border-border hover:border-primary/50'
+                                }`}
+                                onClick={() => setSelectedAvatar(avatar)}
+                              >
+                                <Avatar className="w-12 h-12">
+                                  <AvatarImage src={avatar} />
+                                  <AvatarFallback>A</AvatarFallback>
+                                </Avatar>
+                              </motion.div>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Form Fields */}
+                        <div className="space-y-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="displayName">Display Name</Label>
+                            <Input
+                              id="displayName"
+                              value={editForm.displayName}
+                              onChange={(e) => setEditForm(prev => ({ ...prev, displayName: e.target.value }))}
+                            />
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <Label htmlFor="bio">Bio</Label>
+                            <Input
+                              id="bio"
+                              value={editForm.bio}
+                              onChange={(e) => setEditForm(prev => ({ ...prev, bio: e.target.value }))}
+                              placeholder="Tell us about yourself..."
+                            />
+                          </div>
+                        </div>
+
+                        <div className="flex space-x-3">
+                          <Button onClick={handleSaveProfile} className="flex-1">
+                            <Save className="w-4 h-4 mr-2" />
+                            Save Changes
+                          </Button>
+                          <Button variant="outline" onClick={() => setIsEditModalOpen(false)}>
+                            <X className="w-4 h-4 mr-2" />
+                            Cancel
+                          </Button>
+                        </div>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
                 </div>
               </CardContent>
             </Card>

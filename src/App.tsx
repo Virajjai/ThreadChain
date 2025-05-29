@@ -14,6 +14,8 @@ import Notifications from "./pages/Notifications";
 import Following from "./pages/Following";
 import Settings from "./pages/Settings";
 import SetupProfile from "./pages/SetupProfile";
+import PostDetail from "./pages/PostDetail";
+import UserProfile from "./pages/UserProfile";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -35,6 +37,8 @@ const App = () => (
                 <Route path="/following" element={<Following />} />
                 <Route path="/settings" element={<Settings />} />
                 <Route path="/setup-profile" element={<SetupProfile />} />
+                <Route path="/post/:postId" element={<PostDetail />} />
+                <Route path="/user/:username" element={<UserProfile />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>

@@ -12,19 +12,22 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { useApp } from '@/contexts/AppContext';
 import { toast } from '@/hooks/use-toast';
 
-const avatarOptions = [
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=1',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=2',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=3',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=4',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=5',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=6',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=7',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=8',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=9',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=10',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=11',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=12'
+const animeAvatars = [
+  'https://api.dicebear.com/7.x/avataaars/svg?seed=anime1&mouth=smile&eyes=happy',
+  'https://api.dicebear.com/7.x/avataaars/svg?seed=anime2&mouth=smile&eyes=wink',
+  'https://api.dicebear.com/7.x/avataaars/svg?seed=anime3&mouth=eating&eyes=surprised',
+  'https://api.dicebear.com/7.x/avataaars/svg?seed=anime4&mouth=tongue&eyes=hearts',
+  'https://api.dicebear.com/7.x/avataaars/svg?seed=anime5&mouth=smile&eyes=cry',
+  'https://api.dicebear.com/7.x/avataaars/svg?seed=anime6&mouth=concerned&eyes=squint',
+  'https://api.dicebear.com/7.x/avataaars/svg?seed=anime7&mouth=serious&eyes=default',
+  'https://api.dicebear.com/7.x/avataaars/svg?seed=anime8&mouth=smile&eyes=happy',
+  'https://api.dicebear.com/7.x/avataaars/svg?seed=anime9&mouth=eating&eyes=wink',
+  'https://api.dicebear.com/7.x/avataaars/svg?seed=anime10&mouth=tongue&eyes=surprised',
+  'https://api.dicebear.com/7.x/avataaars/svg?seed=anime11&mouth=smile&eyes=hearts',
+  'https://api.dicebear.com/7.x/avataaars/svg?seed=anime12&mouth=concerned&eyes=cry',
+  'https://api.dicebear.com/7.x/avataaars/svg?seed=anime13&mouth=default&eyes=default',
+  'https://api.dicebear.com/7.x/avataaars/svg?seed=anime14&mouth=smile&eyes=squint',
+  'https://api.dicebear.com/7.x/avataaars/svg?seed=anime15&mouth=eating&eyes=default'
 ];
 
 const SetupProfile = () => {
@@ -35,8 +38,22 @@ const SetupProfile = () => {
   const [displayName, setDisplayName] = useState('');
   const [username, setUsername] = useState('');
   const [bio, setBio] = useState('');
-  const [selectedAvatar, setSelectedAvatar] = useState(avatarOptions[0]);
+  const [selectedAvatar, setSelectedAvatar] = useState(animeAvatars[0]);
+  const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const result = e.target?.result as string;
+        setUploadedImage(result);
+        setSelectedAvatar(result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -131,8 +148,40 @@ const SetupProfile = () => {
               {/* Avatar Selection */}
               <div className="space-y-4">
                 <Label className="text-sm font-medium">Choose your avatar</Label>
-                <div className="grid grid-cols-6 gap-3">
-                  {avatarOptions.map((avatar, index) => (
+                
+                {/* Upload Custom Image */}
+                <div className="space-y-2">
+                  <Label htmlFor="avatar-upload" className="text-xs text-muted-foreground">
+                    Upload custom image
+                  </Label>
+                  <div className="flex items-center space-x-2">
+                    <input
+                      id="avatar-upload"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      className="hidden"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => document.getElementById('avatar-upload')?.click()}
+                    >
+                      <Camera className="w-4 h-4 mr-2" />
+                      Upload Image
+                    </Button>
+                    {uploadedImage && (
+                      <Avatar className="w-10 h-10">
+                        <AvatarImage src={uploadedImage} />
+                      </Avatar>
+                    )}
+                  </div>
+                </div>
+                
+                {/* Anime Avatars */}
+                <div className="grid grid-cols-8 gap-3">
+                  {animeAvatars.map((avatar, index) => (
                     <motion.div
                       key={index}
                       whileHover={{ scale: 1.1 }}
