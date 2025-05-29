@@ -46,59 +46,59 @@ const Index = () => {
   const handleVote = (postId: string, voteType: 'up' | 'down') => {
     console.log(`Voting ${voteType} on post ${postId}`);
     
-    setPosts(currentPosts => 
-      currentPosts.map(post => {
-        if (post.id === postId) {
-          const currentVote = post.userVote;
-          let newUpvotes = post.upvotes;
-          let newDownvotes = post.downvotes;
-          let newUserVote: 'up' | 'down' | null = voteType;
+    const updatedPosts = posts.map(post => {
+      if (post.id === postId) {
+        const currentVote = post.userVote;
+        let newUpvotes = post.upvotes;
+        let newDownvotes = post.downvotes;
+        let newUserVote: 'up' | 'down' | null = voteType;
 
-          // Remove previous vote if it exists
-          if (currentVote === 'up') {
-            newUpvotes--;
-          } else if (currentVote === 'down') {
-            newDownvotes--;
-          }
-
-          // Add new vote or remove if same
-          if (currentVote === voteType) {
-            newUserVote = null;
-          } else {
-            if (voteType === 'up') {
-              newUpvotes++;
-            } else {
-              newDownvotes++;
-            }
-          }
-
-          return {
-            ...post,
-            upvotes: newUpvotes,
-            downvotes: newDownvotes,
-            userVote: newUserVote
-          };
+        // Remove previous vote if it exists
+        if (currentVote === 'up') {
+          newUpvotes--;
+        } else if (currentVote === 'down') {
+          newDownvotes--;
         }
-        return post;
-      })
-    );
+
+        // Add new vote or remove if same
+        if (currentVote === voteType) {
+          newUserVote = null;
+        } else {
+          if (voteType === 'up') {
+            newUpvotes++;
+          } else {
+            newDownvotes++;
+          }
+        }
+
+        return {
+          ...post,
+          upvotes: newUpvotes,
+          downvotes: newDownvotes,
+          userVote: newUserVote
+        };
+      }
+      return post;
+    });
+    
+    setPosts(updatedPosts);
   };
 
   const handleTip = (postId: string, amount: number) => {
     console.log(`Tipping ${amount} SOL to post ${postId}`);
     
-    setPosts(currentPosts => 
-      currentPosts.map(post => {
-        if (post.id === postId) {
-          return {
-            ...post,
-            tipAmount: post.tipAmount + amount,
-            hasUserTipped: true
-          };
-        }
-        return post;
-      })
-    );
+    const updatedPosts = posts.map(post => {
+      if (post.id === postId) {
+        return {
+          ...post,
+          tipAmount: post.tipAmount + amount,
+          hasUserTipped: true
+        };
+      }
+      return post;
+    });
+    
+    setPosts(updatedPosts);
   };
 
   if (!connected) {
