@@ -1,29 +1,28 @@
+
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Search, Bell, Settings, User, Sun, Moon, Home, PlusCircle, Users, Hash } from 'lucide-react';
+import { Bell, Settings, User, Sun, Moon, Home, PlusCircle, Users, Hash } from 'lucide-react';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger, DropdownMenuSeparator, DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
+import { SearchBar } from '@/components/search/SearchBar';
 import { useApp } from '@/contexts/AppContext';
 import { useTheme } from '@/contexts/ThemeContext';
 
 export const Navbar = () => {
   const { connected } = useWallet();
   const navigate = useNavigate();
-  const { currentUser, notifications, searchQuery, setSearchQuery, setSelectedHashtag } = useApp();
+  const { currentUser, notifications, setSearchQuery, setSelectedHashtag } = useApp();
   const { theme, toggleTheme } = useTheme();
-  const [localSearchQuery, setLocalSearchQuery] = useState(searchQuery);
 
   const unreadNotifications = notifications.filter(n => !n.isRead).length;
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    setSearchQuery(localSearchQuery);
+  const handleSearch = (query: string) => {
+    setSearchQuery(query);
     setSelectedHashtag(null);
     navigate('/');
   };
@@ -94,21 +93,7 @@ export const Navbar = () => {
 
           {/* Search Bar */}
           <div className="flex-1 max-w-md mx-8">
-            <form onSubmit={handleSearch} className="relative">
-              <motion.div
-                whileFocus={{ scale: 1.02 }}
-                className="relative"
-              >
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-                <Input
-                  type="text"
-                  placeholder="Search posts, users, hashtags..."
-                  value={localSearchQuery}
-                  onChange={(e) => setLocalSearchQuery(e.target.value)}
-                  className="pl-10 glass border-border/50 focus:border-primary/50 transition-all duration-300"
-                />
-              </motion.div>
-            </form>
+            <SearchBar onSearch={handleSearch} />
           </div>
 
           {/* Navigation Icons & User Menu */}
