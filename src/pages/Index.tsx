@@ -1,4 +1,5 @@
-import React from 'react';
+
+import React, { useState } from 'react';
 import { Navbar } from '@/components/layout/Navbar';
 import { PostCard } from '@/components/post/PostCard';
 import { FeedTabs } from '@/components/feed/FeedTabs';
@@ -13,7 +14,33 @@ import { Button } from '@/components/ui/button';
 const Index = () => {
   const { connected } = useWallet();
   const navigate = useNavigate();
-  const { currentUser, filteredPosts, isLoading, searchQuery } = useApp();
+  const { currentUser, filteredPosts, isLoading, searchQuery, setSelectedHashtag, setSearchQuery } = useApp();
+  const [activeTab, setActiveTab] = useState('trending');
+
+  // Mock vote handler - replace with actual implementation later
+  const handleVote = (postId: string, voteType: 'up' | 'down') => {
+    console.log(`Voting ${voteType} on post ${postId}`);
+    // TODO: Implement actual voting logic with database
+  };
+
+  // Mock tip handler - replace with actual implementation later
+  const handleTip = (postId: string, amount: number) => {
+    console.log(`Tipping ${amount} SOL on post ${postId}`);
+    // TODO: Implement actual tipping logic with Solana
+  };
+
+  // Handle hashtag click
+  const handleTagClick = (tag: string) => {
+    setSelectedHashtag(tag);
+    setSearchQuery('');
+    navigate('/');
+  };
+
+  // Handle tab change
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab);
+    // TODO: Implement filtering logic based on tab
+  };
 
   // If wallet is not connected, show landing page
   if (!connected) {
@@ -96,7 +123,7 @@ const Index = () => {
           {/* Left Sidebar - Hidden on mobile */}
           <div className="hidden lg:block">
             <div className="sticky top-24 space-y-6">
-              <TrendingTags />
+              <TrendingTags onTagClick={handleTagClick} />
             </div>
           </div>
 
@@ -114,7 +141,9 @@ const Index = () => {
                 </div>
               )}
               
-              {!searchQuery && <FeedTabs />}
+              {!searchQuery && (
+                <FeedTabs activeTab={activeTab} onTabChange={handleTabChange} />
+              )}
               
               {/* Posts Feed */}
               <div className="space-y-4">
@@ -146,7 +175,11 @@ const Index = () => {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: index * 0.1 }}
                     >
-                      <PostCard post={post} />
+                      <PostCard 
+                        post={post} 
+                        onVote={handleVote}
+                        onTip={handleTip}
+                      />
                     </motion.div>
                   ))
                 ) : (
