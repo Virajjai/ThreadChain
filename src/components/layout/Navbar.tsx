@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -20,7 +19,7 @@ export const Navbar = () => {
   const { theme, toggleTheme } = useTheme();
   const [localSearchQuery, setLocalSearchQuery] = useState(searchQuery);
 
-  const unreadNotifications = notifications.filter(n => !n.read).length;
+  const unreadNotifications = notifications.filter(n => !n.isRead).length;
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
