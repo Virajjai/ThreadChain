@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
 import { Navbar } from '@/components/layout/Navbar';
+import { AppSidebar } from '@/components/layout/AppSidebar';
 import { PostCard } from '@/components/post/PostCard';
 import { FeedTabs } from '@/components/feed/FeedTabs';
 import { TrendingTags } from '@/components/feed/TrendingTags';
@@ -10,6 +11,7 @@ import { motion } from 'framer-motion';
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { SidebarProvider, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
 
 const Index = () => {
   const { connected } = useWallet();
@@ -115,93 +117,100 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
-      
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          {/* Left Sidebar - Hidden on mobile */}
-          <div className="hidden lg:block">
-            <div className="sticky top-24 space-y-6">
-              <TrendingTags onTagClick={handleTagClick} />
-            </div>
+    <SidebarProvider>
+      <div className="min-h-screen flex w-full bg-background">
+        <AppSidebar />
+        
+        <SidebarInset className="flex-1">
+          <Navbar />
+          
+          {/* Sidebar Trigger for mobile */}
+          <div className="flex items-center gap-2 px-4 py-2 border-b border-border/50 md:hidden">
+            <SidebarTrigger />
+            <span className="text-sm text-muted-foreground">Menu</span>
           </div>
-
-          {/* Main Feed */}
-          <div className="lg:col-span-2">
-            <div className="space-y-6">
-              {searchQuery && (
-                <div className="text-center py-4">
-                  <h2 className="text-xl font-semibold mb-2">
-                    Search Results for "{searchQuery}"
-                  </h2>
-                  <p className="text-muted-foreground">
-                    {filteredPosts.length} {filteredPosts.length === 1 ? 'result' : 'results'} found
-                  </p>
-                </div>
-              )}
-              
-              {!searchQuery && (
-                <FeedTabs activeTab={activeTab} onTabChange={handleTabChange} />
-              )}
-              
-              {/* Posts Feed */}
-              <div className="space-y-4">
-                {isLoading ? (
-                  <div className="space-y-4">
-                    {[...Array(3)].map((_, i) => (
-                      <div key={i} className="glass rounded-xl p-6">
-                        <div className="animate-pulse">
-                          <div className="flex items-center space-x-3 mb-4">
-                            <div className="w-10 h-10 bg-muted rounded-full"></div>
-                            <div className="space-y-2 flex-1">
-                              <div className="h-4 bg-muted rounded w-1/4"></div>
-                              <div className="h-3 bg-muted rounded w-1/6"></div>
-                            </div>
-                          </div>
-                          <div className="space-y-2">
-                            <div className="h-4 bg-muted rounded"></div>
-                            <div className="h-4 bg-muted rounded w-3/4"></div>
-                          </div>
-                        </div>
+          
+          <div className="flex-1">
+            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+              <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+                {/* Main Feed */}
+                <div className="lg:col-span-3">
+                  <div className="space-y-6">
+                    {searchQuery && (
+                      <div className="text-center py-4">
+                        <h2 className="text-xl font-semibold mb-2">
+                          Search Results for "{searchQuery}"
+                        </h2>
+                        <p className="text-muted-foreground">
+                          {filteredPosts.length} {filteredPosts.length === 1 ? 'result' : 'results'} found
+                        </p>
                       </div>
-                    ))}
+                    )}
+                    
+                    {!searchQuery && (
+                      <FeedTabs activeTab={activeTab} onTabChange={handleTabChange} />
+                    )}
+                    
+                    {/* Posts Feed */}
+                    <div className="space-y-4">
+                      {isLoading ? (
+                        <div className="space-y-4">
+                          {[...Array(3)].map((_, i) => (
+                            <div key={i} className="glass rounded-xl p-6">
+                              <div className="animate-pulse">
+                                <div className="flex items-center space-x-3 mb-4">
+                                  <div className="w-10 h-10 bg-muted rounded-full"></div>
+                                  <div className="space-y-2 flex-1">
+                                    <div className="h-4 bg-muted rounded w-1/4"></div>
+                                    <div className="h-3 bg-muted rounded w-1/6"></div>
+                                  </div>
+                                </div>
+                                <div className="space-y-2">
+                                  <div className="h-4 bg-muted rounded"></div>
+                                  <div className="h-4 bg-muted rounded w-3/4"></div>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : filteredPosts.length > 0 ? (
+                        filteredPosts.map((post, index) => (
+                          <motion.div
+                            key={post.id}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: index * 0.1 }}
+                          >
+                            <PostCard 
+                              post={post} 
+                              onVote={handleVote}
+                              onTip={handleTip}
+                            />
+                          </motion.div>
+                        ))
+                      ) : (
+                        <div className="text-center py-12">
+                          <p className="text-muted-foreground text-lg">
+                            {searchQuery ? 'No posts found matching your search.' : 'No posts to display.'}
+                          </p>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                ) : filteredPosts.length > 0 ? (
-                  filteredPosts.map((post, index) => (
-                    <motion.div
-                      key={post.id}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.1 }}
-                    >
-                      <PostCard 
-                        post={post} 
-                        onVote={handleVote}
-                        onTip={handleTip}
-                      />
-                    </motion.div>
-                  ))
-                ) : (
-                  <div className="text-center py-12">
-                    <p className="text-muted-foreground text-lg">
-                      {searchQuery ? 'No posts found matching your search.' : 'No posts to display.'}
-                    </p>
+                </div>
+
+                {/* Right Sidebar - Trending Tags for larger screens */}
+                <div className="hidden lg:block">
+                  <div className="sticky top-24">
+                    <TrendingTags onTagClick={handleTagClick} />
                   </div>
-                )}
+                </div>
               </div>
             </div>
           </div>
-
-          {/* Right Sidebar - Hidden on mobile */}
-          <div className="hidden lg:block">
-            <div className="sticky top-24">
-              {/* Additional sidebar content can go here */}
-            </div>
-          </div>
-        </div>
+        </SidebarInset>
       </div>
-    </div>
+    </SidebarProvider>
   );
 };
 
